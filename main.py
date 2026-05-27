@@ -8,17 +8,19 @@ load_dotenv()
 
 
 # === CONFIGURE THESE ===
-WELCOME_CHANNEL_ID = 1509247667371507742  # replace with your welcome channel ID
+WELCOME_CHANNEL_ID = 1509247667371507742  # welcome channel ID
+GOODBYE_CHANNEL_ID = 1509263732369391676  # goodbye channel ID
 
-# Put your emoji ID number here
-GTE_EMOJI_ID = 1509254546092855538 # <- replace with your emoji ID
-
+GTE_EMOJI_ID = 1509254546092855538       # your logo emoji ID
 # =======================
 
 intents = discord.Intents.default()
-intents.members = True
+intents.members = True  # needed for join/leave events
 
 bot = commands.Bot(command_prefix="!", intents=intents)
+
+def get_gte_emoji(guild: discord.Guild):
+    return discord.utils.get(guild.emojis, id=GTE_EMOJI_ID)
 
 @bot.event
 async def on_ready():
@@ -34,15 +36,28 @@ async def on_member_join(member: discord.Member):
         f"Welcome {member.mention} to **GTE**! *Please Read The Server Rules*"
     )
 
-    # Get the emoji object from the guild by ID
-    emoji = discord.utils.get(member.guild.emojis, id=GTE_EMOJI_ID)
-    if emoji is None:
-        print("Emoji not found in this guild.")
+    emoji = get_gte_emoji(member.guild)
+    if emoji:
+        try:
+            await msg.add_reaction(emoji)
+        except discord.HTTPException as e:
+            print(f"Failed to add welcome reaction: {e}")
+
+@bot.event
+async def on_member_remove(member: discord.Member):
+    channel = member.guild.get_channel(GOODBYE_CHANNEL_ID)
+    if channel is None:
         return
 
-    try:
-        await msg.add_reaction(emoji)
-    except discord.HTTPException as e:
-        print(f"Failed to add reaction: {e}")
+    msg = await channel.send(
+        f"{member.mention} has left **GTE**"
+    )
+
+    emoji = get_gte_emoji(member.guild)
+    if emoji:
+        try:
+            await msg.add_reaction(emoji)
+        except discord.HTTPException as e:
+            print(f"Failed to add goodbye reaction: {e}")
 
 bot.run(os.getenv("TOKEN"))
