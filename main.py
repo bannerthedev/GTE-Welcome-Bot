@@ -1,8 +1,13 @@
 import discord
 from discord.ext import commands
+import os 
+import dotenv
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 # === CONFIGURE THESE ===
-TOKEN = "MTUwOTIzOTU3MzEzNjI4MTg5MQ.Gtluja.PlvFUHObHH_4n-yx6PMnMBTrcL53uC_NIyHYMM"
 WELCOME_CHANNEL_ID = 1509247667371507742  # replace with your welcome channel ID
 
 # Put your emoji ID number here
@@ -40,4 +45,4 @@ async def on_member_join(member: discord.Member):
     except discord.HTTPException as e:
         print(f"Failed to add reaction: {e}")
 
-bot.run(TOKEN)
+bot.run(os.getenv("TOKEN"))
